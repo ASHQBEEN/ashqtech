@@ -73,7 +73,9 @@ namespace ashqtech
 
             axes = new Axis[axesCount];
             for (int i = 0; i < axesCount; i++)
+            {
                 axes[i] = new Axis(handler, i, axisNames[i]);
+            }
         }
 
         private uint GetMaxAxesCount()
@@ -87,9 +89,9 @@ namespace ashqtech
 
         public void Close()
         {
+            Group.Close();
             foreach (var axis in axes)
                 axis.Close();
-            Group.Close();
             uint actionResult = Motion.mAcm_DevClose(ref handler);
             string errorPrefix = $"{Name}: Закрытие устройства";
             ApiErrorChecker.CheckForError(actionResult, errorPrefix);

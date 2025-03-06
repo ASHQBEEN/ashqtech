@@ -8,7 +8,7 @@ namespace ashqtech
     public sealed class Axis
     {
         public string Name { get; } = string.Empty;
-        internal IntPtr Handler { get; }
+        internal IntPtr Handler => handler;
         private IntPtr handler = IntPtr.Zero;
         private readonly int index;
         private readonly IntPtr deviceHandler;
