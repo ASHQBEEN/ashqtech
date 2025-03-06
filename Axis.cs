@@ -1,7 +1,6 @@
 ﻿using Advantech.Motion;
 using ashqtech.Enums;
 using ashqtech.Utility;
-using ashqTech;
 using System;
 
 namespace ashqtech
@@ -49,14 +48,13 @@ namespace ashqtech
             ApiErrorChecker.CheckForError(actionResult, errorPrefix);
         }
 
-        public InputLogic GetInputBit(ushort chanell)
+        public byte GetInputBit(ushort chanell)
         {
             byte bit = 0;
             uint actionResult = Motion.mAcm_AxDiGetBit(handler, chanell, ref bit);
-            InputLogic t = (InputLogic)bit;
-            string errorPrefix = $"{Name}: Получение бита порта ввода на канале {chanell} ({t})";
+            string errorPrefix = $"{Name}: Получение бита порта ввода на канале {chanell} ({bit})";
             ApiErrorChecker.CheckForError(actionResult, errorPrefix);
-            return t;
+            return bit;
         }
 
         public double CommandPosition
