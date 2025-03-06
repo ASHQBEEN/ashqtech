@@ -1,4 +1,4 @@
-﻿namespace ashqTech
+﻿namespace ashqtech
 {
     public enum InputLogic
     {
