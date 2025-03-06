@@ -1,7 +1,7 @@
 ﻿using Advantech.Motion;
 using ashqtech.Utility;
-using System.Text;
 using System;
+using System.Text;
 
 namespace ashqtech
 {
@@ -24,7 +24,8 @@ namespace ashqtech
 
         public double Acceleration
         {
-            set{
+            set
+            {
 
                 uint actionResult = Motion.mAcm_SetF64Property(handler, (uint)PropertyID.PAR_GpAcc, value);
                 string errorPrefix = $"{deviceName}: Установка ускорения группы ({value})";

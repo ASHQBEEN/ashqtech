@@ -1,5 +1,5 @@
-﻿using ashqtech.Utility;
-using Advantech.Motion;
+﻿using Advantech.Motion;
+using ashqtech.Utility;
 using System;
 
 namespace ashqtech
