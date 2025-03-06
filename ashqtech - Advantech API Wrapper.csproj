@@ -1,0 +1,14 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <RootNamespace>ashqtech</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Reference Include="AdvMotAPI">
+      <HintPath>Resources\AdvMotAPI.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+
+</Project>
