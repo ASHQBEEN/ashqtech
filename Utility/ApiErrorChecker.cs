@@ -1,19 +1,15 @@
-﻿using Advantech.Motion;
-using System.Text;
-using System;
-
-namespace ashqtech.Utility
+﻿namespace ashqtech.Utility
 {
     internal class ApiErrorChecker
     {
         public static void CheckForError(uint actionResult, string errorPrefix)
         {
-            if (actionResult == (uint)ErrorCode.SUCCESS)
+            if (actionResult == (uint)Advantech.Motion.ErrorCode.SUCCESS)
                 return;
-            StringBuilder errorDescription = new StringBuilder(string.Empty, 100);
+            System.Text.StringBuilder errorDescription = new System.Text.StringBuilder(string.Empty, 100);
             //Get the error message according to error code returned from API
-            Motion.mAcm_GetErrorMessage(actionResult, errorDescription, 100);
-            throw new Exception($"{errorPrefix} завершено ошибкой с кодом: {actionResult}\r\n{errorDescription}");
+            Advantech.Motion.Motion.mAcm_GetErrorMessage(actionResult, errorDescription, 100);
+            throw new System.Exception($"{errorPrefix} завершено ошибкой с кодом: {actionResult}\r\n{errorDescription}");
         }
     }
 }
