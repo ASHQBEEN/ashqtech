@@ -4,7 +4,7 @@ using System;
 
 namespace ashqtech
 {
-    public sealed class AdvantechDevice
+    public sealed class AdvantechDevice : IAdvantechDevice
     {
         private IntPtr handler = IntPtr.Zero;
         public string Name { get; private set; } = string.Empty;

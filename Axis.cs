@@ -25,6 +25,13 @@ namespace ashqtech
             index = axisIndex;
             this.deviceHandler = deviceHandler;
             Open(this.deviceHandler, index);
+            ResetPosition();
+        }
+
+        public void ResetPosition()
+        {
+            ActualPosition = 0;
+            CommandPosition = 0;
         }
 
         public Axis(IntPtr deviceHandler, int axisIndex, string axisName) : this(deviceHandler, axisIndex) => Name = axisName;
@@ -245,11 +252,16 @@ namespace ashqtech
             ApiErrorChecker.CheckForError(actionResult, errorPrefix);
         }
 
-        public void TurnServo(ServoState servoState)
+        public bool Servo
         {
-            uint actionResult = Motion.mAcm_AxSetSvOn(Handler, (uint)servoState);
-            string errorPrefix = $"{Name}: Отключение сервопривода";
-            ApiErrorChecker.CheckForError(actionResult, errorPrefix);
+            set
+            {
+                uint servoState = 0;
+                if (value) servoState = 1;
+                uint actionResult = Motion.mAcm_AxSetSvOn(Handler, servoState);
+                string errorPrefix = $"{Name}: Отключение сервопривода";
+                ApiErrorChecker.CheckForError(actionResult, errorPrefix);
+            }
         }
 
         public void ResetError()
