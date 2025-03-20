@@ -5,9 +5,17 @@
     <RootNamespace>ashqtech</RootNamespace>
   </PropertyGroup>
 
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <GenerateAssemblyInfo>True</GenerateAssemblyInfo>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+    <GenerateAssemblyInfo>True</GenerateAssemblyInfo>
+  </PropertyGroup>
+
   <ItemGroup>
     <Reference Include="AdvMotAPI">
-      <HintPath>Resources\AdvMotAPI.dll</HintPath>
+      <HintPath>..\AdvMotAPI.dll</HintPath>
     </Reference>
   </ItemGroup>
 
