@@ -30,7 +30,6 @@ namespace ashqtech
             }
             InitializeAxesByCount(axesCount, axisNames);
             Group = new AxesGroup(Name);
-            IsVirtual = Name[0] == 'V';
         }
 
         private void BuildDeviceByName(string name)
