@@ -8,7 +8,6 @@ namespace ashqtech
     {
         private IntPtr handler = IntPtr.Zero;
         public string Name { get; private set; } = string.Empty;
-        public bool IsVirtual { get; }
 
         private Axis[] axes;
         public int AxesCount => axes.Length;
