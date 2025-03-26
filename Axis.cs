@@ -100,18 +100,6 @@ namespace ashqtech
             }
         }
 
-        public uint IOStatus
-        {
-            get
-            {
-                uint ioStatus = 0;
-                uint actionResult = Motion.mAcm_AxGetMotionIO(Handler, ref ioStatus);
-                string errorPrefix = $"{Name}: Получение статуса I/O ({ioStatus})";
-                ApiErrorChecker.CheckForError(actionResult, errorPrefix);
-                return ioStatus;
-            }
-        }
-
         public AxisState State
         {
             get
@@ -252,14 +240,27 @@ namespace ashqtech
             ApiErrorChecker.CheckForError(actionResult, errorPrefix);
         }
 
+        private bool _servo = false;
+
+        /// <summary>
+        /// Gets/Sets Servodrivers state
+        /// </summary>
+        /// <remarks>
+        /// Get method is unsafe since it is based on variable and not on any Advantech.Motion method to get state
+        /// </remarks>
         public bool Servo
         {
+            get
+            {
+                return _servo;
+            }
             set
             {
+                _servo = value;
                 uint servoState = 0;
-                if (value) servoState = 1;
+                if (_servo) servoState = 1;
                 uint actionResult = Motion.mAcm_AxSetSvOn(Handler, servoState);
-                string errorPrefix = $"{Name}: Отключение сервопривода";
+                string errorPrefix = $"{Name}: Переключение сервопривода в состояние {_servo}";
                 ApiErrorChecker.CheckForError(actionResult, errorPrefix);
             }
         }
@@ -277,5 +278,20 @@ namespace ashqtech
             string errorPrefix = $"{Name}: Закрытие оси";
             ApiErrorChecker.CheckForError(actionResult, errorPrefix);
         }
+
+        private uint _ioStatus
+        {
+            get
+            {
+                uint ioStatus = 0;
+                uint actionResult = Motion.mAcm_AxGetMotionIO(Handler, ref ioStatus);
+                string errorPrefix = $"{Name}: Получение статуса I/O ({ioStatus})";
+                ApiErrorChecker.CheckForError(actionResult, errorPrefix);
+                return ioStatus;
+            }
+        }
+
+        public bool IsHardwareLimitP => (_ioStatus & (uint)Ax_Motion_IO.AX_MOTION_IO_LMTP) > 0;
+        public bool IsHardwareLimitN => (_ioStatus & (uint)Ax_Motion_IO.AX_MOTION_IO_LMTN) > 0;
     }
 }
