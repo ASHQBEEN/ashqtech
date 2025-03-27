@@ -6,14 +6,13 @@ namespace ashqtech
 {
     public sealed class AdvantechDevice : IAdvantechDevice
     {
-        private IntPtr handler = IntPtr.Zero;
         public string Name { get; private set; } = string.Empty;
-
-        private Axis[] axes;
-        public int AxesCount => axes.Length;
-        public Axis this[int index] { get { return axes[index]; } }
-
+        public int AxesCount => _axes.Length;
+        public Axis this[int index] { get { return _axes[index]; } }
         public AxesGroup Group { get; }
+
+        private IntPtr _handler = IntPtr.Zero;
+        private Axis[] _axes;
 
         public AdvantechDevice(string queryName, uint axesCount, string[] axisNames = null)
         {
@@ -49,7 +48,7 @@ namespace ashqtech
                     break;
                 }
 
-            handler = deviceHandler;
+            _handler = deviceHandler;
         }
 
         private DEV_LIST[] GetDevices()
@@ -69,17 +68,17 @@ namespace ashqtech
             if (axesCount > maxAxesCount)
                 throw new ArgumentException($"{Name}: Устройство не поддерживает {axesCount} осей. Максимальное количество - {maxAxesCount}.");
 
-            axes = new Axis[axesCount];
+            _axes = new Axis[axesCount];
             for (int i = 0; i < axesCount; i++)
             {
-                axes[i] = new Axis(handler, i, axisNames[i]);
+                _axes[i] = new Axis(_handler, i, axisNames[i]);
             }
         }
 
         private uint GetMaxAxesCount()
         {
             uint AxisPerDev = 0;
-            uint actionResult = Motion.mAcm_GetU32Property(handler, (uint)PropertyID.FT_DevAxesCount, ref AxisPerDev);
+            uint actionResult = Motion.mAcm_GetU32Property(_handler, (uint)PropertyID.FT_DevAxesCount, ref AxisPerDev);
             string errorPrefix = $"{Name}: Получение количества доступных осей ({AxisPerDev})";
             ApiErrorChecker.CheckForError(actionResult, errorPrefix);
             return AxisPerDev;
@@ -88,19 +87,18 @@ namespace ashqtech
         public void Close()
         {
             Group.Close();
-            foreach (var axis in axes)
+            foreach (var axis in _axes)
                 axis.Close();
-            uint actionResult = Motion.mAcm_DevClose(ref handler);
+            uint actionResult = Motion.mAcm_DevClose(ref _handler);
             string errorPrefix = $"{Name}: Закрытие устройства";
             ApiErrorChecker.CheckForError(actionResult, errorPrefix);
         }
 
         public void LoadConfig(string path)
         {
-            uint actionResult = Motion.mAcm_DevLoadConfig(handler, path);
+            uint actionResult = Motion.mAcm_DevLoadConfig(_handler, path);
             string errorPrefix = $"{Name}: Загрукзка файла конфигурации: {path}";
             ApiErrorChecker.CheckForError(actionResult, errorPrefix);
         }
-
     }
 }

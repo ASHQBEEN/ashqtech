@@ -8,61 +8,24 @@ namespace ashqtech
     public sealed class Axis
     {
         public string Name { get; } = string.Empty;
-        internal IntPtr Handler => handler;
-        private IntPtr handler = IntPtr.Zero;
-        private readonly int index;
-        private readonly IntPtr deviceHandler;
+        internal IntPtr Handler => _handler;
+        private IntPtr _handler = IntPtr.Zero;
+        private readonly int _index;
+        private readonly IntPtr _deviceHandler;
 
-        private void Open(IntPtr deviceHandler, int axisIndex)
-        {
-            uint actionResult = Motion.mAcm_AxOpen(deviceHandler, (ushort)axisIndex, ref handler);
-            string errorPrefix = $"{Name}: Открытие оси (обработчик: {handler})";
-            ApiErrorChecker.CheckForError(actionResult, errorPrefix);
-        }
+        private bool _servo = false;
 
         public Axis(IntPtr deviceHandler, int axisIndex)
         {
-            index = axisIndex;
-            this.deviceHandler = deviceHandler;
-            Open(this.deviceHandler, index);
+            _index = axisIndex;
+            _deviceHandler = deviceHandler;
+            Open(_deviceHandler, _index);
             ResetPosition();
-        }
-
-        public void ResetPosition()
-        {
-            ActualPosition = 0;
-            CommandPosition = 0;
         }
 
         public Axis(IntPtr deviceHandler, int axisIndex, string axisName) : this(deviceHandler, axisIndex) => Name = axisName;
 
         public OutLogic Output4 { get => GetOutputBit(4); set => SetOutputBit(4, value); }
-
-        private OutLogic GetOutputBit(ushort chanell)
-        {
-            byte bitDo = 0;
-            uint actionResult = Motion.mAcm_AxDoGetBit(handler, chanell, ref bitDo);
-            var bit = (OutLogic)bitDo;
-            string errorPrefix = $"{Name}: Получение бита порта вывода на канал {chanell} ({bit})";
-            ApiErrorChecker.CheckForError(actionResult, errorPrefix);
-            return bit;
-        }
-
-        private void SetOutputBit(ushort channel, OutLogic bit)
-        {
-            uint actionResult = Motion.mAcm_AxDoSetBit(handler, channel, (byte)bit);
-            string errorPrefix = $"{Name}: Задание бита порта вывода на канале {channel} ({bit})";
-            ApiErrorChecker.CheckForError(actionResult, errorPrefix);
-        }
-
-        public byte GetInputBit(ushort chanell)
-        {
-            byte bit = 0;
-            uint actionResult = Motion.mAcm_AxDiGetBit(handler, chanell, ref bit);
-            string errorPrefix = $"{Name}: Получение бита порта ввода на канале {chanell} ({bit})";
-            ApiErrorChecker.CheckForError(actionResult, errorPrefix);
-            return bit;
-        }
 
         public double CommandPosition
         {
@@ -205,6 +168,84 @@ namespace ashqtech
             }
         }
 
+        /// <summary>
+        /// Gets/Sets Servodrivers state
+        /// </summary>
+        /// <remarks>
+        /// Get method is unsafe since it is based on variable and not on any Advantech.Motion method to get state
+        /// </remarks>
+        public bool Servo
+        {
+            get
+            {
+                return _servo;
+            }
+            set
+            {
+                _servo = value;
+                uint servoState = 0;
+                if (_servo) servoState = 1;
+                uint actionResult = Motion.mAcm_AxSetSvOn(Handler, servoState);
+                string errorPrefix = $"{Name}: Переключение сервопривода в состояние {_servo}";
+                ApiErrorChecker.CheckForError(actionResult, errorPrefix);
+            }
+        }
+
+        private uint _ioStatus
+        {
+            get
+            {
+                uint ioStatus = 0;
+                uint actionResult = Motion.mAcm_AxGetMotionIO(Handler, ref ioStatus);
+                string errorPrefix = $"{Name}: Получение статуса I/O ({ioStatus})";
+                ApiErrorChecker.CheckForError(actionResult, errorPrefix);
+                return ioStatus;
+            }
+        }
+
+        public bool IsHardwareLimitP => (_ioStatus & (uint)Ax_Motion_IO.AX_MOTION_IO_LMTP) > 0;
+
+        public bool IsHardwareLimitN => (_ioStatus & (uint)Ax_Motion_IO.AX_MOTION_IO_LMTN) > 0;
+
+        private void Open(IntPtr deviceHandler, int axisIndex)
+        {
+            uint actionResult = Motion.mAcm_AxOpen(deviceHandler, (ushort)axisIndex, ref _handler);
+            string errorPrefix = $"{Name}: Открытие оси (обработчик: {_handler})";
+            ApiErrorChecker.CheckForError(actionResult, errorPrefix);
+        }
+
+        public void ResetPosition()
+        {
+            ActualPosition = 0;
+            CommandPosition = 0;
+        }
+
+        private OutLogic GetOutputBit(ushort chanell)
+        {
+            byte bitDo = 0;
+            uint actionResult = Motion.mAcm_AxDoGetBit(_handler, chanell, ref bitDo);
+            var bit = (OutLogic)bitDo;
+            string errorPrefix = $"{Name}: Получение бита порта вывода на канал {chanell} ({bit})";
+            ApiErrorChecker.CheckForError(actionResult, errorPrefix);
+            return bit;
+        }
+
+        private void SetOutputBit(ushort channel, OutLogic bit)
+        {
+            uint actionResult = Motion.mAcm_AxDoSetBit(_handler, channel, (byte)bit);
+            string errorPrefix = $"{Name}: Задание бита порта вывода на канале {channel} ({bit})";
+            ApiErrorChecker.CheckForError(actionResult, errorPrefix);
+        }
+
+        public byte GetInputBit(ushort chanell)
+        {
+            byte bit = 0;
+            uint actionResult = Motion.mAcm_AxDiGetBit(_handler, chanell, ref bit);
+            string errorPrefix = $"{Name}: Получение бита порта ввода на канале {chanell} ({bit})";
+            ApiErrorChecker.CheckForError(actionResult, errorPrefix);
+            return bit;
+        }
+
         public void MoveRelative(double distance)
         {
             uint actionResult = Motion.mAcm_AxMoveRel(Handler, distance);
@@ -240,31 +281,6 @@ namespace ashqtech
             ApiErrorChecker.CheckForError(actionResult, errorPrefix);
         }
 
-        private bool _servo = false;
-
-        /// <summary>
-        /// Gets/Sets Servodrivers state
-        /// </summary>
-        /// <remarks>
-        /// Get method is unsafe since it is based on variable and not on any Advantech.Motion method to get state
-        /// </remarks>
-        public bool Servo
-        {
-            get
-            {
-                return _servo;
-            }
-            set
-            {
-                _servo = value;
-                uint servoState = 0;
-                if (_servo) servoState = 1;
-                uint actionResult = Motion.mAcm_AxSetSvOn(Handler, servoState);
-                string errorPrefix = $"{Name}: Переключение сервопривода в состояние {_servo}";
-                ApiErrorChecker.CheckForError(actionResult, errorPrefix);
-            }
-        }
-
         public void ResetError()
         {
             uint actionResult = Motion.mAcm_AxResetError(Handler);
@@ -274,24 +290,9 @@ namespace ashqtech
 
         public void Close()
         {
-            uint actionResult = Motion.mAcm_AxClose(ref handler);
+            uint actionResult = Motion.mAcm_AxClose(ref _handler);
             string errorPrefix = $"{Name}: Закрытие оси";
             ApiErrorChecker.CheckForError(actionResult, errorPrefix);
         }
-
-        private uint _ioStatus
-        {
-            get
-            {
-                uint ioStatus = 0;
-                uint actionResult = Motion.mAcm_AxGetMotionIO(Handler, ref ioStatus);
-                string errorPrefix = $"{Name}: Получение статуса I/O ({ioStatus})";
-                ApiErrorChecker.CheckForError(actionResult, errorPrefix);
-                return ioStatus;
-            }
-        }
-
-        public bool IsHardwareLimitP => (_ioStatus & (uint)Ax_Motion_IO.AX_MOTION_IO_LMTP) > 0;
-        public bool IsHardwareLimitN => (_ioStatus & (uint)Ax_Motion_IO.AX_MOTION_IO_LMTN) > 0;
     }
 }
