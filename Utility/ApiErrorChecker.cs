@@ -9,7 +9,15 @@
             System.Text.StringBuilder errorDescription = new System.Text.StringBuilder(string.Empty, 100);
             //Get the error message according to error code returned from API
             Advantech.Motion.Motion.mAcm_GetErrorMessage(actionResult, errorDescription, 100);
-            throw new System.Exception($"{errorPrefix} завершено ошибкой с кодом: {actionResult}\r\n{errorDescription}");
+            throw new AdvantechException($"{errorPrefix} завершено ошибкой с кодом: {actionResult}\r\n{errorDescription}");
+        }
+    }
+
+    public class AdvantechException : System.Exception
+    {
+        public AdvantechException(string message) : base(message)
+        {
+            
         }
     }
 }
