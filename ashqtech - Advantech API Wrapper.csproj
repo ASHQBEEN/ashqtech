@@ -15,7 +15,7 @@
 
   <ItemGroup>
     <Reference Include="AdvMotAPI">
-      <HintPath>..\AdvMotAPI.dll</HintPath>
+      <HintPath>Resources\AdvMotAPI.dll</HintPath>
     </Reference>
   </ItemGroup>
 
